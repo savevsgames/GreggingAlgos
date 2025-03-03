@@ -3,7 +3,9 @@ import {
   profiles, type Profile, type InsertProfile,
   tests, type Test, type InsertTest,
   questions, type Question, type InsertQuestion,
-  userScores, type UserScore, type InsertUserScore
+  userScores, type UserScore, type InsertUserScore,
+  discussions, type Discussion, type InsertDiscussion,
+  comments, type Comment, type InsertComment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -37,6 +39,12 @@ export interface IStorage {
   getUserScores(userId: number): Promise<UserScore[]>;
   getTestScores(testId: number): Promise<UserScore[]>;
   createUserScore(score: InsertUserScore): Promise<UserScore>;
+
+  // Discussion operations
+  getDiscussions(): Promise<Discussion[]>;
+  getDiscussionById(id: number): Promise<Discussion | undefined>;
+  createDiscussion(discussion: InsertDiscussion): Promise<Discussion>;
+  createComment(comment: InsertComment): Promise<Comment>;
 
   // Session store for authentication
   sessionStore: session.SessionStore;
@@ -129,6 +137,52 @@ export class DatabaseStorage implements IStorage {
   async createUserScore(score: InsertUserScore): Promise<UserScore> {
     const [newScore] = await db.insert(userScores).values(score).returning();
     return newScore;
+  }
+
+  // Discussion operations
+  async getDiscussions(): Promise<Discussion[]> {
+    return db
+      .select()
+      .from(discussions)
+      .orderBy(discussions.createdAt);
+  }
+
+  async getDiscussionById(id: number): Promise<Discussion | undefined> {
+    const [discussion] = await db
+      .select()
+      .from(discussions)
+      .where(eq(discussions.id, id));
+
+    if (discussion) {
+      const discussionComments = await db
+        .select()
+        .from(comments)
+        .where(eq(comments.discussionId, id))
+        .orderBy(comments.createdAt);
+
+      return {
+        ...discussion,
+        comments: discussionComments,
+      };
+    }
+
+    return discussion;
+  }
+
+  async createDiscussion(discussion: InsertDiscussion): Promise<Discussion> {
+    const [newDiscussion] = await db
+      .insert(discussions)
+      .values(discussion)
+      .returning();
+    return newDiscussion;
+  }
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const [newComment] = await db
+      .insert(comments)
+      .values(comment)
+      .returning();
+    return newComment;
   }
 }
 

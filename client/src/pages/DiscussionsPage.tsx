@@ -1,13 +1,39 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { insertDiscussionSchema } from "@shared/schema";
 
 export default function DiscussionsPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data: discussions, isLoading: isLoadingDiscussions } = useQuery({
     queryKey: ["/api/discussions"],
@@ -16,6 +42,49 @@ export default function DiscussionsPage() {
   const { data: selectedDiscussion, isLoading: isLoadingDiscussion } = useQuery({
     queryKey: ["/api/discussions", selectedDiscussionId],
     enabled: !!selectedDiscussionId,
+  });
+
+  const createDiscussionMutation = useMutation({
+    mutationFn: async (data: { title: string; content: string }) => {
+      const res = await apiRequest("POST", "/api/discussions", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
+      setIsCreateDialogOpen(false);
+      toast({
+        title: "Discussion created",
+        description: "Your discussion has been posted successfully.",
+      });
+    },
+  });
+
+  const createCommentMutation = useMutation({
+    mutationFn: async ({ discussionId, content }: { discussionId: number; content: string }) => {
+      const res = await apiRequest("POST", `/api/discussions/${discussionId}/comments`, { content });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussionId] });
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted successfully.",
+      });
+    },
+  });
+
+  const form = useForm({
+    resolver: zodResolver(insertDiscussionSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+    },
+  });
+
+  const commentForm = useForm({
+    defaultValues: {
+      content: "",
+    },
   });
 
   if (isLoadingDiscussions) {
@@ -32,8 +101,67 @@ export default function DiscussionsPage() {
         {/* Discussions List */}
         <div className="md:col-span-1">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Discussions</CardTitle>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Discussion
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Discussion</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit((data) => createDiscussionMutation.mutate(data))}
+                      className="space-y-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Discussion title" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Content</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Write your discussion here..."
+                                className="min-h-[200px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={createDiscussionMutation.isPending}
+                      >
+                        {createDiscussionMutation.isPending
+                          ? "Creating discussion..."
+                          : "Create Discussion"}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[calc(100vh-16rem)]">
@@ -73,11 +201,71 @@ export default function DiscussionsPage() {
                 <div className="prose dark:prose-invert max-w-none">
                   {selectedDiscussion.content}
                 </div>
-                
-                {/* Comments section would go here */}
+
+                {/* Comments section */}
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-4">Comments</h3>
-                  {/* Comments list would go here */}
+                  <div className="space-y-4">
+                    {selectedDiscussion.comments?.map((comment) => (
+                      <Card key={comment.id}>
+                        <CardContent className="p-4">
+                          <p>{comment.content}</p>
+                          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                            <img
+                              src={comment.author.profile?.avatarUrl}
+                              alt=""
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <span>{comment.author.profile?.displayName || comment.author.username}</span>
+                            <span>•</span>
+                            <span>
+                              {formatDistanceToNow(new Date(comment.createdAt), {
+                                addSuffix: true,
+                              })}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Add comment form */}
+                  <Form {...commentForm}>
+                    <form
+                      onSubmit={commentForm.handleSubmit((data) =>
+                        createCommentMutation.mutate({
+                          discussionId: selectedDiscussion.id,
+                          content: data.content,
+                        })
+                      )}
+                      className="mt-4"
+                    >
+                      <FormField
+                        control={commentForm.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Write a comment..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        className="mt-2"
+                        disabled={createCommentMutation.isPending}
+                      >
+                        {createCommentMutation.isPending
+                          ? "Adding comment..."
+                          : "Add Comment"}
+                      </Button>
+                    </form>
+                  </Form>
                 </div>
               </CardContent>
             </Card>

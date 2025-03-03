@@ -62,6 +62,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(scores);
   });
 
+  // Discussion routes
+  app.get("/api/discussions", async (req, res) => {
+    const discussions = await storage.getDiscussions();
+    res.json(discussions);
+  });
+
+  app.get("/api/discussions/:id", async (req, res) => {
+    const discussion = await storage.getDiscussionById(parseInt(req.params.id));
+    if (!discussion) {
+      return res.status(404).send("Discussion not found");
+    }
+    res.json(discussion);
+  });
+
+  app.post("/api/discussions", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const discussion = await storage.createDiscussion({
+      ...req.body,
+      userId: req.user.id,
+    });
+    res.json(discussion);
+  });
+
+  app.post("/api/discussions/:id/comments", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const comment = await storage.createComment({
+      discussionId: parseInt(req.params.id),
+      userId: req.user.id,
+      content: req.body.content,
+    });
+    res.json(comment);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
