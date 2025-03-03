@@ -4,6 +4,10 @@ export interface Topic {
   category: "data-structures" | "algorithms";
   description: string;
   content: string;
+  exampleCode: {
+    javascript: string;
+    python: string;
+  };
 }
 
 export const topics: Topic[] = [
@@ -15,14 +19,59 @@ export const topics: Topic[] = [
     content: `
       <h2>Introduction to Arrays</h2>
       <p>Arrays are one of the most fundamental data structures in computer science. They store elements in contiguous memory locations, providing fast access to elements using indices.</p>
-      
+
       <h3>Key Characteristics</h3>
       <ul>
         <li>Fixed size (in most implementations)</li>
         <li>O(1) access time</li>
         <li>Contiguous memory allocation</li>
       </ul>
-    `
+    `,
+    exampleCode: {
+      javascript: `// Example: Working with Arrays
+const numbers = [1, 2, 3, 4, 5];
+
+// Adding elements
+numbers.push(6);
+console.log("After push:", numbers);
+
+// Accessing elements
+console.log("First element:", numbers[0]);
+console.log("Last element:", numbers[numbers.length - 1]);
+
+// Iterating
+console.log("\\nIterating through array:");
+numbers.forEach(num => console.log(num));
+
+// Array operations
+const doubled = numbers.map(num => num * 2);
+console.log("\\nDoubled numbers:", doubled);
+
+const sum = numbers.reduce((acc, curr) => acc + curr, 0);
+console.log("Sum of numbers:", sum);`,
+      python: `# Example: Working with Arrays (Lists in Python)
+numbers = [1, 2, 3, 4, 5]
+
+# Adding elements
+numbers.append(6)
+print("After append:", numbers)
+
+# Accessing elements
+print("First element:", numbers[0])
+print("Last element:", numbers[-1])
+
+# Iterating
+print("\\nIterating through list:")
+for num in numbers:
+    print(num)
+
+# List operations
+doubled = [num * 2 for num in numbers]
+print("\\nDoubled numbers:", doubled)
+
+sum_numbers = sum(numbers)
+print("Sum of numbers:", sum_numbers)`
+    }
   },
   {
     title: "Graphs",
@@ -32,7 +81,60 @@ export const topics: Topic[] = [
     content: `
       <h2>Understanding Graphs</h2>
       <p>Graphs are collections of vertices (nodes) connected by edges, used to represent relationships between objects.</p>
-    `
+    `,
+    exampleCode: {
+      javascript: `// Example: Implementing a Simple Graph
+class Graph {
+  constructor() {
+    this.adjacencyList = {};
+  }
+
+  addVertex(vertex) {
+    if (!this.adjacencyList[vertex]) {
+      this.adjacencyList[vertex] = [];
+    }
+  }
+
+  addEdge(vertex1, vertex2) {
+    this.adjacencyList[vertex1].push(vertex2);
+    this.adjacencyList[vertex2].push(vertex1);
+  }
+}
+
+// Creating a graph
+const graph = new Graph();
+graph.addVertex("A");
+graph.addVertex("B");
+graph.addVertex("C");
+
+graph.addEdge("A", "B");
+graph.addEdge("B", "C");
+
+console.log("Graph structure:", graph.adjacencyList);`,
+      python: `# Example: Implementing a Simple Graph
+class Graph:
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.adjacency_list:
+            self.adjacency_list[vertex] = []
+
+    def add_edge(self, vertex1, vertex2):
+        self.adjacency_list[vertex1].append(vertex2)
+        self.adjacency_list[vertex2].append(vertex1)
+
+# Creating a graph
+graph = Graph()
+graph.add_vertex("A")
+graph.add_vertex("B")
+graph.add_vertex("C")
+
+graph.add_edge("A", "B")
+graph.add_edge("B", "C")
+
+print("Graph structure:", graph.adjacency_list)`
+    }
   },
   {
     title: "Hash Tables",
@@ -42,7 +144,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Hash Tables Explained</h2>
       <p>Hash tables provide fast access to values using keys through a hashing function.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Linked Lists",
@@ -52,7 +155,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Linked Lists Deep Dive</h2>
       <p>Linked lists store elements in nodes that point to the next element in the sequence.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Stacks and Queues",
@@ -62,7 +166,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Stacks and Queues Overview</h2>
       <p>These structures handle data in specific orders: Last-In-First-Out for stacks and First-In-First-Out for queues.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Dynamic Programming",
@@ -72,7 +177,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Dynamic Programming Fundamentals</h2>
       <p>Dynamic programming solves complex problems by breaking them down into simpler subproblems.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Recursion",
@@ -82,7 +188,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Recursion Explained</h2>
       <p>Recursion is a method where a function calls itself to solve smaller instances of the same problem.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Sorting",
@@ -92,7 +199,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Sorting Algorithms</h2>
       <p>Sorting algorithms arrange data in a specific order, with different approaches offering various trade-offs.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "Traversals",
@@ -102,7 +210,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Traversal Techniques</h2>
       <p>Traversal algorithms systematically visit every element in a data structure exactly once.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "BFS (Breadth-First Search)",
@@ -112,7 +221,8 @@ export const topics: Topic[] = [
     content: `
       <h2>Breadth-First Search</h2>
       <p>BFS explores a graph or tree by visiting all nodes at the current depth before moving to nodes at the next depth level.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   },
   {
     title: "DFS (Depth-First Search)",
@@ -122,6 +232,7 @@ export const topics: Topic[] = [
     content: `
       <h2>Depth-First Search</h2>
       <p>DFS explores a graph or tree by going as far as possible along each branch before backtracking.</p>
-    `
+    `,
+    exampleCode: { javascript: "", python: "" }
   }
 ];

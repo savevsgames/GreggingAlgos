@@ -2,6 +2,7 @@ import { useRoute } from "wouter";
 import { topics } from "../../../public/data/topics";
 import { ShareButton } from "@/components/ShareButton";
 import { Card, CardContent } from "@/components/ui/card";
+import { CodeEditor } from "@/components/CodeEditor";
 
 export default function TopicPage() {
   const [, params] = useRoute("/topic/:slug");
@@ -34,11 +35,16 @@ export default function TopicPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardContent className="pt-6 prose prose-slate max-w-none">
           <div dangerouslySetInnerHTML={{ __html: topic.content }} />
         </CardContent>
       </Card>
+
+      <CodeEditor 
+        initialCode={topic.exampleCode.javascript} 
+        language="javascript"
+      />
     </div>
   );
 }
