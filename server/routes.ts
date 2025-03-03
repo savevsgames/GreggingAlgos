@@ -2,6 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -93,6 +96,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       content: req.body.content,
     });
     res.json(comment);
+  });
+
+  app.post("/api/chat", async (req, res) => {
+    if (!req.body.message) {
+      return res.status(400).send("Message is required");
+    }
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: req.body.message }],
+        temperature: 0.7,
+      });
+
+      res.json({ message: response.choices[0].message.content });
+    } catch (error) {
+      console.error("OpenAI API error:", error);
+      res.status(500).send("Failed to get AI response");
+    }
   });
 
   const httpServer = createServer(app);

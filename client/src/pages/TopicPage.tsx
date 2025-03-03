@@ -4,10 +4,13 @@ import { ShareButton } from "@/components/ShareButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { CodeEditor } from "@/components/CodeEditor";
 import { TopicTest } from "@/components/TopicTest";
+import { AIChatDrawer } from "@/components/AIChatDrawer";
+import { useState } from "react";
 
 export default function TopicPage() {
   const [, params] = useRoute("/topic/:slug");
   const topic = topics.find((t) => t.slug === params?.slug);
+  const [editorContent, setEditorContent] = useState(topic?.exampleCode.javascript || "");
 
   if (!topic) {
     return <div>Topic not found</div>;
@@ -45,11 +48,14 @@ export default function TopicPage() {
       <CodeEditor 
         initialCode={topic.exampleCode.javascript} 
         language="javascript"
+        onChange={setEditorContent}
       />
 
       <div className="mt-8">
         <TopicTest topicSlug={topic.slug} />
       </div>
+
+      <AIChatDrawer editorContent={editorContent} />
     </div>
   );
 }

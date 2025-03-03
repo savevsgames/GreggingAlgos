@@ -116,7 +116,12 @@ export default function DiscussionsPage() {
                   </DialogHeader>
                   <Form {...form}>
                     <form
-                      onSubmit={form.handleSubmit((data) => createDiscussionMutation.mutate(data))}
+                      onSubmit={form.handleSubmit((data) => {
+                        createDiscussionMutation.mutate({
+                          title: data.title,
+                          content: data.content,
+                        });
+                      })}
                       className="space-y-4"
                     >
                       <FormField
