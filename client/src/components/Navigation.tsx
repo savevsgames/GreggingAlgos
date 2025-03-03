@@ -71,6 +71,9 @@ export function Navigation() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/profile">Profile Settings</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => logoutMutation.mutate()}
                 disabled={logoutMutation.isPending}

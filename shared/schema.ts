@@ -18,7 +18,10 @@ export const profiles = pgTable("profiles", {
   userId: integer("user_id").references(() => users.id).notNull(),
   displayName: text("display_name"),
   bio: text("bio"),
+  avatarUrl: text("avatar_url"),
   githubUsername: text("github_username"),
+  linkedinProfile: text("linkedin_profile"),
+  portfolioUrl: text("portfolio_url"),
   theme: text("theme").default("light").notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

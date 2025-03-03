@@ -43,6 +43,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(score);
   });
 
+  // Add profile routes
+  app.get("/api/profile", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const profile = await storage.getProfile(req.user.id);
+    res.json(profile);
+  });
+
+  app.patch("/api/profile", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const profile = await storage.updateProfile(req.user.id, req.body);
+    res.json(profile);
+  });
+
+  app.get("/api/user/scores", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const scores = await storage.getUserScores(req.user.id);
+    res.json(scores);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -11,6 +11,7 @@ import Home from "@/pages/Home";
 import TopicPage from "@/pages/TopicPage";
 import AuthPage from "@/pages/AuthPage";
 import DiscussionsPage from "@/pages/DiscussionsPage";
+import ProfilePage from "@/pages/ProfilePage"; // Added import
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/topic/:slug" component={TopicPage} />
       <ProtectedRoute path="/discussions" component={DiscussionsPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Added route */}
       <Route component={NotFound} />
     </Switch>
   );
