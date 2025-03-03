@@ -3,6 +3,7 @@ import { topics } from "../../../public/data/topics";
 import { ShareButton } from "@/components/ShareButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { CodeEditor } from "@/components/CodeEditor";
+import { TopicTest } from "@/components/TopicTest";
 
 export default function TopicPage() {
   const [, params] = useRoute("/topic/:slug");
@@ -45,6 +46,10 @@ export default function TopicPage() {
         initialCode={topic.exampleCode.javascript} 
         language="javascript"
       />
+
+      <div className="mt-8">
+        <TopicTest topicSlug={topic.slug} />
+      </div>
     </div>
   );
 }
