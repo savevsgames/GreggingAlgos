@@ -28,7 +28,6 @@ console.log(
   process.env.DATABASE_URL || "❌ MISSING"
 );
 
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -94,7 +93,7 @@ app.use((req, res, next) => {
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
-  const port = 3000;
+  const port = process.env.PORT;
   server.listen(
     {
       port,
