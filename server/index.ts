@@ -24,8 +24,7 @@ if (isDev) {
 }
 
 console.log(
-  "✅ Loaded DATABASE_URL:",
-  process.env.DATABASE_URL || "❌ MISSING"
+  process.env.DATABASE_URL ? "✅ Loaded DATABASE_URL:" : "❌ MISSING"
 );
 
 const app = express();
