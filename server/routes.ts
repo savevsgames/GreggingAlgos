@@ -1,10 +1,37 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Fix __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 🔹 Load `.env.local` only in development
+const isDev = process.env.NODE_ENV === "development";
+if (isDev) {
+  dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
+  console.log("🛠️ Running in Development Mode - Using .env.local");
+} else {
+  console.log(
+    "🚀 Running in Production Mode - Using system environment variables"
+  );
+}
+
+console.log(
+  process.env.OPENAI_API_KEY
+    ? "✅ Loaded OPENAI_API_KEY"
+    : "❌ OPENAI_API_KEY is MISSING"
+);
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -27,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(null);
     }
     const scores = await storage.getTestScores(tests[0].id);
-    const userScores = scores.filter(score => score.userId === req.user!.id);
+    const userScores = scores.filter((score) => score.userId === req.user!.id);
     const latestScore = userScores.length ? userScores[0].score : null;
     res.json(latestScore);
   });
