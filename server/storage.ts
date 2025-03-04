@@ -1,17 +1,56 @@
-import { 
-  users, type User, type InsertUser,
-  profiles, type Profile, type InsertProfile,
-  tests, type Test, type InsertTest,
-  questions, type Question, type InsertQuestion,
-  userScores, type UserScore, type InsertUserScore,
-  discussions, type Discussion, type InsertDiscussion,
-  comments, type Comment, type InsertComment
+import {
+  users,
+  type User,
+  type InsertUser,
+  profiles,
+  type Profile,
+  type InsertProfile,
+  tests,
+  type Test,
+  type InsertTest,
+  questions,
+  type Question,
+  type InsertQuestion,
+  userScores,
+  type UserScore,
+  type InsertUserScore,
+  discussions,
+  type Discussion,
+  type InsertDiscussion,
+  comments,
+  type Comment,
+  type InsertComment,
 } from "@shared/schema";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
+
+// Fix __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 🔹 Load `.env.local` only in development
+const isDev = process.env.NODE_ENV === "development";
+if (isDev) {
+  dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
+  console.log("🛠️ Running in Development Mode - Using .env.local");
+} else {
+  console.log(
+    "🚀 Running in Production Mode - Using system environment variables"
+  );
+}
+
+// Ensure database URL is loaded
+console.log(
+  process.env.DATABASE_URL
+    ? `✅ Using DATABASE_URL: ${process.env.DATABASE_URL}`
+    : "❌ DATABASE_URL is MISSING"
+);
 
 const PostgresSessionStore = connectPg(session);
 
@@ -24,7 +63,10 @@ export interface IStorage {
   // Profile operations
   getProfile(userId: number): Promise<Profile | undefined>;
   createProfile(profile: InsertProfile): Promise<Profile>;
-  updateProfile(userId: number, profile: Partial<InsertProfile>): Promise<Profile>;
+  updateProfile(
+    userId: number,
+    profile: Partial<InsertProfile>
+  ): Promise<Profile>;
 
   // Test operations
   getTest(id: number): Promise<Test | undefined>;
@@ -47,11 +89,11 @@ export interface IStorage {
   createComment(comment: InsertComment): Promise<Comment>;
 
   // Session store for authentication
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -67,7 +109,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
     return user;
   }
 
@@ -78,7 +123,10 @@ export class DatabaseStorage implements IStorage {
 
   // Profile operations
   async getProfile(userId: number): Promise<Profile | undefined> {
-    const [profile] = await db.select().from(profiles).where(eq(profiles.userId, userId));
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, userId));
     return profile;
   }
 
@@ -87,7 +135,10 @@ export class DatabaseStorage implements IStorage {
     return newProfile;
   }
 
-  async updateProfile(userId: number, profile: Partial<InsertProfile>): Promise<Profile> {
+  async updateProfile(
+    userId: number,
+    profile: Partial<InsertProfile>
+  ): Promise<Profile> {
     const [updatedProfile] = await db
       .update(profiles)
       .set({ ...profile, updatedAt: new Date() })
@@ -121,7 +172,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createQuestion(question: InsertQuestion): Promise<Question> {
-    const [newQuestion] = await db.insert(questions).values(question).returning();
+    const [newQuestion] = await db
+      .insert(questions)
+      .values(question)
+      .returning();
     return newQuestion;
   }
 
@@ -141,13 +195,12 @@ export class DatabaseStorage implements IStorage {
 
   // Discussion operations
   async getDiscussions(): Promise<Discussion[]> {
-    return db
-      .select()
-      .from(discussions)
-      .orderBy(discussions.createdAt);
+    return db.select().from(discussions).orderBy(discussions.createdAt);
   }
 
-  async getDiscussionById(id: number): Promise<Discussion | undefined> {
+  async getDiscussionById(
+    id: number
+  ): Promise<(Discussion & { comments: Comment[] }) | undefined> {
     const [discussion] = await db
       .select()
       .from(discussions)
@@ -178,10 +231,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createComment(comment: InsertComment): Promise<Comment> {
-    const [newComment] = await db
-      .insert(comments)
-      .values(comment)
-      .returning();
+    const [newComment] = await db.insert(comments).values(comment).returning();
     return newComment;
   }
 }
