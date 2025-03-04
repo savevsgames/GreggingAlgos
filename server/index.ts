@@ -33,7 +33,11 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: ["http://localhost:5000", "http://localhost:3000"], // Backend & Frontend
+    origin: [
+      "http://localhost:5000",
+      "http://localhost:3000",
+      "https://greggingalgos.onrender.com",
+    ], // Backend & Frontend & Production URL
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
