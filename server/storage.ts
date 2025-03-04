@@ -48,7 +48,7 @@ if (isDev) {
 // Ensure database URL is loaded
 console.log(
   process.env.DATABASE_URL
-    ? `✅ Using DATABASE_URL: ${process.env.DATABASE_URL}`
+    ? `✅ Using DATABASE_URL`
     : "❌ DATABASE_URL is MISSING"
 );
 
